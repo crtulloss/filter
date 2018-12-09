@@ -166,3 +166,25 @@ plot(bandpass_w/(1e6*2*pi),mag2db(abs(bandpass_h)));
 title('Normalized Bandpass Response: 10^{th}-order Elliptic');
 ylabel('|H(j\omega)| (dB)');
 xlabel('f (MHz)');
+
+%% Pole/zero pairing
+% numx defines the numerator term (s^2 + numx)
+
+% zero at origin with p1_w02
+num1 = 0;
+
+% zero at +/- j4.71e7
+num2 = bandpass_z(2) * bandpass_z(5);
+% with p2_w02
+
+% zero at +/- j5.19e7
+num3 = bandpass_z(6) * bandpass_z(9);
+% with p3_w0
+
+% zero at +/- j7.52e7
+num4 = bandpass_z(7) * bandpass_z(8);
+% with p2_w01
+
+% zero at +/- j8.29e7
+num5 = bandpass_z(3) * bandpass_z(4);
+% with p1_w01
