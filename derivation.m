@@ -67,6 +67,8 @@ ylabel('|H(j\Omega)| (dB)');
 xlabel('Normalized \Omega (rad/s)');
 
 %% Transform to Bandpass
+% note that the textbook derives these for omega_0=1, while
+% we use our actual omega_0 to arrive at the final transfer function
 
 % calculate w0 and Q for each of the cc pole pairs
 p1_w0 = abs(pe(1));
@@ -86,34 +88,36 @@ p1_q = sqrt(Q/p1_a * ((2*Q/p1_a + p1_b/(2*p1_a*Q)) + sqrt(...
 p2_q = sqrt(Q/p2_a * ((2*Q/p2_a + p2_b/(2*p2_a*Q)) + sqrt(...
     (2*Q/p2_a + p2_b/(2*p2_a*Q))^2 - 1)));
 
-p1_w01 = p1_a*p1_q/(2*Q)+0.5*sqrt(p1_b/(Q^2) - 1/(p1_q^2));
-p1_w02 = 1/p1_w01;
+p1_w01 = omega_0*(p1_a*p1_q/(2*Q)+0.5*sqrt(p1_b/(Q^2) - 1/(p1_q^2)));
+p1_w02 = omega_0^2/p1_w01;
 
-p2_w01 = p2_a*p2_q/(2*Q)+0.5*sqrt(p2_b/(Q^2) - 1/(p2_q^2));
-p2_w02 = 1/p2_w01;
+p2_w01 = omega_0*(p2_a*p2_q/(2*Q)+0.5*sqrt(p2_b/(Q^2) - 1/(p2_q^2)));
+p2_w02 = omega_0^2/p2_w01;
 
 % for the lowpass real pole, the bandpass cc pole pair
-% has w0=1. calculate Q
+% has w0=omega_0. calculate Q
 p3 = abs(pe(5));
+p3_w0 = omega_0;
 p3_q = Q/p3;
 
 % follow the textbook derivation p. 387-388 to calculate the bandpass zeros
 % signs are flipped in 2 and 4 because -a * -1/a = 1 as well as a/a=1!
 % ensures that zeros are cc pairs
 z1 = imag(ze(1));
-z1_w1 = sqrt(z1^2/(4*Q^2) + 1) - z1/(2*Q);
-z1_w2 = sqrt(z1^2/(4*Q^2) + 1) + z1/(2*Q);
+z1_w1 = omega_0*(sqrt(z1^2/(4*Q^2) + 1) - z1/(2*Q));
+z1_w2 = omega_0*(sqrt(z1^2/(4*Q^2) + 1) + z1/(2*Q));
 z2 = imag(ze(2));
-z2_w1 = -sqrt(z2^2/(4*Q^2) + 1) + z2/(2*Q);
-z2_w2 = -sqrt(z2^2/(4*Q^2) + 1) - z2/(2*Q);
+z2_w1 = omega_0*(-sqrt(z2^2/(4*Q^2) + 1) + z2/(2*Q));
+z2_w2 = omega_0*(-sqrt(z2^2/(4*Q^2) + 1) - z2/(2*Q));
 z3 = imag(ze(3));
-z3_w1 = sqrt(z3^2/(4*Q^2) + 1) - z3/(2*Q);
-z3_w2 = sqrt(z3^2/(4*Q^2) + 1) + z3/(2*Q);
+z3_w1 = omega_0*(sqrt(z3^2/(4*Q^2) + 1) - z3/(2*Q));
+z3_w2 = omega_0*(sqrt(z3^2/(4*Q^2) + 1) + z3/(2*Q));
 z4 = imag(ze(4));
-z4_w1 = -sqrt(z4^2/(4*Q^2) + 1) + z4/(2*Q);
-z4_w2 = -sqrt(z4^2/(4*Q^2) + 1) - z4/(2*Q);
+z4_w1 = omega_0*(-sqrt(z4^2/(4*Q^2) + 1) + z4/(2*Q));
+z4_w2 = omega_0*(-sqrt(z4^2/(4*Q^2) + 1) - z4/(2*Q));
 
 % check the transfer function - need to put in pole-zero form
+% zero at origin from transformation of 1st-order pole
 bandpass_z = [0 z1_w1 z1_w2 z2_w1 z2_w2 z3_w1 z3_w2 z4_w1 z4_w2]';
 bandpass_z = 1i*bandpass_z;
 
@@ -144,21 +148,21 @@ p = [a b c];
 bp78 = roots(p);
 
 a = 1;
-b = 1/p3_q;
-c = 1;
+b = p3_w0/p3_q;
+c = p3_w0^2;
 p = [a b c];
 bp910 = roots(p);
 
 bandpass_p = vertcat(bp12, bp34, bp56, bp78, bp910);
 
-% factor of 1/Q from the 1st order pole
-bandpass_k = ke / Q;
+% factor of omega_0/Q from the 1st order pole
+bandpass_k = ke * omega_0 / Q;
 
 % plot normalzied bandpass
 [bandpass_b,bandpass_a] = zp2tf(bandpass_z,bandpass_p,bandpass_k);
 [bandpass_h,bandpass_w] = freqs(bandpass_b,bandpass_a,10000);
 figure
-plot(bandpass_w,mag2db(abs(bandpass_h)));
+plot(bandpass_w/(1e6*2*pi),mag2db(abs(bandpass_h)));
 title('Normalized Bandpass Response: 10^{th}-order Elliptic');
 ylabel('|H(j\omega)| (dB)');
-xlabel('Normalized \omega (rad/s)');
+xlabel('f (MHz)');
