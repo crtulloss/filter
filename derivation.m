@@ -216,23 +216,28 @@ bandpass_z2 = [bandpass_z(6) bandpass_z(9) bandpass_z(2) bandpass_z(5)...
 
 %% Gain splitting
 
-%Vector storing the maximum values of the product of one, two, etc. biquads
-M = zeros(5,1);
-%Vector containing the gains of each biquad
-k = zeros(5,1);
+%Synthesizing individual biquad transfer functions
+[t1_b,t1_a] = zp2tf(bandpass_z2(1:2),bandpass_p2(1:2),1);
+T1 = tf(t1_b,t1_a);
+[t2_b,t2_a] = zp2tf(bandpass_z2(3:4),bandpass_p2(3:4),1);
+T2 = tf(t2_b,t2_a);
+[t3_b,t3_a] = zp2tf(bandpass_z2(5:6),bandpass_p2(5:6),1);
+T3 = tf(t3_b,t3_a);
+[t4_b,t4_a] = zp2tf(bandpass_z2(7:8),bandpass_p2(7:8),1);
+T4 = tf(t4_b,t4_a);
+[t5_b,t5_a] = zp2tf(bandpass_z2(9:10),bandpass_p2(9:10),1);
+T5 = tf(t5_b,t5_a);
 
-for i=1:5
-   z = bandpass_z2(1:2*i);
-   p = bandpass_p2(1:2*i);
-   k = 1;
-   [b,a] = zp2tf(z,p,k);
-   sys = tf(b,a);
-   fband = [2*pi*5e6 2*pi*15e6];
-   M(i) = getPeakGain(sys,0.01,fband);
-end
+%Maximum values of the biquads added one at a time
+M1 = getPeakGain(T1);
+M2 = getPeakGain(T1*T2);
+M3 = getPeakGain(T1*T2*T3);
+M4 = getPeakGain(T1*T2*T3*T4);
+M5 = getPeakGain(T1*T2*T3*T4*T5);
 
-k(1) = bandpass_k*M(5)/M(1);
-k(2) = M(1)/M(2);
-k(3) = M(2)/M(3);
-k(4) = M(3)/M(4);
-k(5) = M(4)/M(5);
+%Optimal gains assigned to each biquad
+k(1) = bandpass_k*M5/M1;
+k(2) = M1/M2;
+k(3) = M2/M3;
+k(4) = M3/M4;
+k(5) = M4/M5;
