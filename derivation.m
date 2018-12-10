@@ -211,7 +211,7 @@ Q5 = abs(abs(bp910(1))/(2*real(bp910(1))));
 %Re-ordering the zero and pole vectors
 bandpass_p2 = flipud(bandpass_p);
 bandpass_z2 = [bandpass_z(6) bandpass_z(9) bandpass_z(2) bandpass_z(5)...
-    bandpass_z(7) bandpass_z(8) bandpass_z(1) bandpass_z(1) bandpass_z(3)...
+    bandpass_z(7) bandpass_z(8) bandpass_z(1) bandpass_z(3)...
     bandpass_z(4)]';
 
 %% Gain splitting
@@ -223,9 +223,9 @@ T1 = tf(t1_b,t1_a);
 T2 = tf(t2_b,t2_a);
 [t3_b,t3_a] = zp2tf(bandpass_z2(5:6),bandpass_p2(5:6),1);
 T3 = tf(t3_b,t3_a);
-[t4_b,t4_a] = zp2tf(bandpass_z2(7:8),bandpass_p2(7:8),1);
+[t4_b,t4_a] = zp2tf(bandpass_z2(7),bandpass_p2(7:8),1);
 T4 = tf(t4_b,t4_a);
-[t5_b,t5_a] = zp2tf(bandpass_z2(9:10),bandpass_p2(9:10),1);
+[t5_b,t5_a] = zp2tf(bandpass_z2(8:9),bandpass_p2(9:10),1);
 T5 = tf(t5_b,t5_a);
 
 %Maximum values of the biquads added one at a time
@@ -236,8 +236,16 @@ M4 = getPeakGain(T1*T2*T3*T4);
 M5 = getPeakGain(T1*T2*T3*T4*T5);
 
 %Optimal gains assigned to each biquad
-k(1) = bandpass_k*M5/M1;
+k(1) = gain/M1;
 k(2) = M1/M2;
 k(3) = M2/M3;
 k(4) = M3/M4;
 k(5) = M4/M5;
+
+[bandpass_b2,bandpass_a2] = zp2tf(bandpass_z2,bandpass_p2,k(1)*k(2)*k(3)*k(4)*k(5));
+[bandpass_h2,bandpass_w2] = freqs(bandpass_b2,bandpass_a2,10000);
+figure
+plot(bandpass_w2/(1e6*2*pi),mag2db(abs(bandpass_h2)));
+title('Normalized Bandpass Response: 10^{th}-order Elliptic');
+ylabel('|H(j\omega)| (dB)');
+xlabel('f (MHz)');
