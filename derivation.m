@@ -188,3 +188,51 @@ num4 = bandpass_z(7) * bandpass_z(8);
 % zero at +/- j8.29e7
 num5 = bandpass_z(3) * bandpass_z(4);
 % with p1_w01
+
+%% TF ordering
+
+%Q factor of first set of poles
+Q1 = abs(abs(bp12(1))/(2*real(bp12(1))));
+
+%Q factor of second set of poles
+Q2 = abs(abs(bp34(1))/(2*real(bp34(1))));
+
+%Q factor of third set of poles
+Q3 = abs(abs(bp56(1))/(2*real(bp56(1))));
+
+%Q factor of fourth set of poles
+Q4 = abs(abs(bp78(1))/(2*real(bp78(1))));
+
+%Q factor of fifth set of poles
+Q5 = abs(abs(bp910(1))/(2*real(bp910(1))));
+
+%Q5 is the least, followed by Q4 (Q3 has same Q) and Q2 (Q1 has the same Q)
+%The order will be p3_w0, p2_w02, p2_w01, p1_w02 and p1_w01.
+%Re-ordering the zero and pole vectors
+bandpass_p2 = flipud(bandpass_p);
+bandpass_z2 = [bandpass_z(6) bandpass_z(9) bandpass_z(2) bandpass_z(5)...
+    bandpass_z(7) bandpass_z(8) bandpass_z(1) bandpass_z(1) bandpass_z(3)...
+    bandpass_z(4)]';
+
+%% Gain splitting
+
+%Vector storing the maximum values of the product of one, two, etc. biquads
+M = zeros(5,1);
+%Vector containing the gains of each biquad
+k = zeros(5,1);
+
+for i=1:5
+   z = bandpass_z2(1:2*i);
+   p = bandpass_p2(1:2*i);
+   k = 1;
+   [b,a] = zp2tf(z,p,k);
+   sys = tf(b,a);
+   fband = [2*pi*5e6 2*pi*15e6];
+   M(i) = getPeakGain(sys,0.01,fband);
+end
+
+k(1) = bandpass_k*M(5)/M(1);
+k(2) = M(1)/M(2);
+k(3) = M(2)/M(3);
+k(4) = M(3)/M(4);
+k(5) = M(4)/M(5);
