@@ -242,10 +242,55 @@ k(3) = M2/M3;
 k(4) = M3/M4;
 k(5) = M4/M5;
 
-[bandpass_b2,bandpass_a2] = zp2tf(bandpass_z2,bandpass_p2,k(1)*k(2)*k(3)*k(4)*k(5));
+[bandpass_b2,bandpass_a2] = zp2tf(bandpass_z2,bandpass_p2,prod(k));
 [bandpass_h2,bandpass_w2] = freqs(bandpass_b2,bandpass_a2,10000);
 figure
 plot(bandpass_w2/(1e6*2*pi),mag2db(abs(bandpass_h2)));
 title('Normalized Bandpass Response: 10^{th}-order Elliptic');
 ylabel('|H(j\omega)| (dB)');
 xlabel('f (MHz)');
+
+%% Component value generation
+
+%Choose a capacitor value of 10pF
+Ca = 10*10^(-12);
+
+%Biquad 1
+w0(1) = sqrt(t1_a(3));
+Ra(1) = 1/(w0(1)*Ca);
+Rb(1) = Q5*Ra(1);
+C1(1) = Ca*k(1)*t1_b(1);
+R1(1) = Rb(1)/(k(1)*t1_b(2)/(w0(1)/Q5));
+R2(1) = Ra(1)/(k(1)*t1_b(3)/w0(1)^2);
+
+%Biquad 2
+w0(2) = sqrt(t2_a(3));
+Ra(2) = 1/(w0(2)*Ca);
+Rb(2) = Q4*Ra(2);
+C1(2) = Ca*k(2)*t2_b(1);
+R1(2) = Rb(2)/(k(2)*t2_b(2)/(w0(2)/Q4));
+R2(2) = Ra(2)/(k(2)*t2_b(3)/w0(2)^2);
+
+%Biquad 3
+w0(3) = sqrt(t3_a(3));
+Ra(3) = 1/(w0(3)*Ca);
+Rb(3) = Q3*Ra(3);
+C1(3) = Ca*k(3)*t3_b(1);
+R1(3) = Rb(3)/(k(3)*t3_b(2)/(w0(3)/Q3));
+R2(3) = Ra(3)/(k(3)*t3_b(3)/w0(3)^2);
+
+%Biquad 4
+w0(4) = sqrt(t4_a(3));
+Ra(4) = 1/(w0(4)*Ca);
+Rb(4) = Q2*Ra(4);
+C1(4) = Ca*k(4)*t4_b(1);
+R1(4) = Rb(4)/(k(4)*t4_b(2)/(w0(4)/Q2));
+R2(4) = Ra(4)/(k(4)*t4_b(3)/w0(4)^2);
+
+%Biquad 5
+w0(5) = sqrt(t5_a(3));
+Ra(5) = 1/(w0(5)*Ca);
+Rb(5) = Q1*Ra(5);
+C1(5) = Ca*k(1)*t5_b(1);
+R1(5) = Rb(5)/(k(5)*t5_b(2)/(w0(5)/Q1));
+R2(5) = Ra(5)/(k(5)*t5_b(3)/w0(5)^2);
