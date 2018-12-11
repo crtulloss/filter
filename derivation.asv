@@ -43,11 +43,10 @@ Omega_p2 = Q*(omega_p2_norm^2 - 1)/omega_p2_norm;
 % so use that
 
 epsilon = sqrt(10^(alpha_max / 10) - 1);
-atten_for_graph = alpha_min + 20*log10(1/epsilon);
+atten_for_graph = alpha_min + 20*log(1/epsilon);
 % can look at the graph - looks like 5
 
-% also check here
-[n,Wp] = ellipord(Omega_p2, Omega_s2, alpha_max, alpha_min, 's');
+% also check here[n,Wp] = ellipord(Omega_p2, Omega_s2, alpha_max, alpha_min, 's');
 % confirmation: order 5
 
 %% Lowpass Transfer Function
